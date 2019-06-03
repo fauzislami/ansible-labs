@@ -1,0 +1,19 @@
+---
+
+- name: test routeros
+  hosts: RB1
+  gather_facts: no
+  
+  tasks:
+    - name: Set system identity
+      routeros_command:
+        commands: /system identity set name="islami"
+    
+    - name: Add IP Address Ether2
+      routeros_command:
+        commands:
+          - /ip address remove numbers=1
+          - /ip address print 
+      register: print_output
+
+    - debug: var=print_output.stdout_lines
