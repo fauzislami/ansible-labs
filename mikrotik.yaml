@@ -1,19 +1,101 @@
 ---
 
-- name: test routeros
+- name: Configuring RB1
   hosts: RB1
   gather_facts: no
-  
+
   tasks:
     - name: Set system identity
       routeros_command:
-        commands: /system identity set name="islami"
-    
-    - name: Add IP Address Ether2
+        commands: /system identity set name="RB1"
+      register: output
+
+    - name: Print hasilnya
+      debug: var=output
+
+    - name: Assigning IP Address on RB1
       routeros_command:
         commands:
-          - /ip address remove numbers=1
-          - /ip address print 
-      register: print_output
+          - /ip address add address=40.40.40.1/30 interface=ether2
+          - /interface bridge add name=loopback0
+          - /ip address add address=1.1.1.1/32 interface=loopback0
+          - /routing ospf network add network=40.40.40.0/30 area=backbone
+          - /routing ospf network add network=1.1.1.1/32 area=backbone
+      register: output
+    - debug: var=output
 
-    - debug: var=print_output.stdout_lines
+- name: Configuring RB2
+  hosts: RB2
+  gather_facts: no
+
+  tasks:
+    - name: Set system identity
+      routeros_command:
+        commands: /system identity set name="RB2"
+      register: output
+
+    - name: Print hasilnya
+      debug: var=output
+
+    - name: Assigning IP Address on RB2
+      routeros_command:
+        commands:
+          - /ip address add address=40.40.40.2/30 interface=ether2
+          - /ip address add address=50.50.50.1/30 interface=ether3
+          - /interface bridge add name=loopback0
+          - /ip address add address=2.2.2.2/32 interface=loopback0
+          - /routing ospf network add network=40.40.40.0/30 area=backbone
+          - /routing ospf network add network=50.50.50.0/30 area=backbone
+          - /routing ospf network add network=2.2.2.2/32 area=backbone
+      register: output
+    - debug: var=output
+
+- name: Configuring RB3
+  hosts: RB3
+  gather_facts: no
+
+  tasks:
+    - name: Set system identity
+      routeros_command:
+        commands: /system identity set name="RB3"
+      register: output
+
+    - name: Print hasilnya
+      debug: var=output
+
+    - name: Assigning IP Address on RB3
+      routeros_command:
+        commands:
+          - /ip address add address=50.50.50.2/30 interface=ether2
+          - /ip address add address=60.60.60.1/30 interface=ether3
+          - /interface bridge add name=loopback0
+          - /ip address add address=3.3.3.3/32 interface=loopback0
+          - /routing ospf network add network=60.60.60.0/30 area=backbone
+          - /routing ospf network add network=50.50.50.0/30 area=backbone
+          - /routing ospf network add network=3.3.3.3/32 area=backbone
+      register: output
+    - debug: var=output
+
+- name: Configuring RB4
+  hosts: RB4
+  gather_facts: no
+
+  tasks:
+    - name: Set system identity
+      routeros_command:
+        commands: /system identity set name="RB4"
+      register: output
+
+    - name: Print hasilnya
+      debug: var=output
+
+    - name: Assigning IP Address on RB4
+      routeros_command:
+        commands:
+          - /ip address add address=60.60.60.2/30 interface=ether2
+          - /interface bridge add name=loopback0
+          - /ip address add address=4.4.4.4/32 interface=loopback0
+          - /routing ospf network add network=60.60.60.0/30 area=backbone
+          - /routing ospf network add network=4.4.4.4/32 area=backbone
+      register: output
+    - debug: var=output
