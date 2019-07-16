@@ -9,11 +9,24 @@
     - name: Assigning IP Address on R1
       ios_config:
         #save_when: modified
-        parents: interface e0/1
+        parents: interface fa1/0
         lines:
           - ip add 10.10.10.1 255.255.255.252
         after:
           - no shutdown
+   
+    - name: Configuring EIGRP on R1
+      ios_config:
+        #save_when: modified
+        parents: router eigrp 10
+        lines:
+          - network 10.10.10.0
+          - no auto-summary
+
+      register: output
+    - name: Printing the output of R1
+      debug: var=output
+
 
 - name: Configuring R2
   hosts: R2
@@ -25,11 +38,15 @@
     - name: Assigning IP Address on R2
       ios_config:
         #save_when: modified
-        parents: interface e0/1
+        parents: "interface {{ item.interface }}"
         lines:
-          - ip add 10.10.10.1 255.255.255.252
+          - "ip add {{ item.ip }} 255.255.255.252"
         after:
           - no shutdown
+
+      loop:
+        - { interface: fa1/0, ip: 10.10.10.2}
+        - { interface: fa2/0, ip: 20.20.20.1}
 
     - name: Configuring EIGRP on R2
       ios_config:
@@ -37,6 +54,7 @@
         parents: router eigrp 10
         lines:
           - network 10.10.10.0
+          - network 20.20.20.0
           - no auto-summary
 
       register: output
@@ -60,8 +78,8 @@
           - no shutdown
 
       loop:
-        - { interface: e0/1, ip: 10.10.10.2}
-        - { interface: e0/2, ip: 20.20.20.1}
+        - { interface: fa1/0, ip: 20.20.20.2}
+        - { interface: fa2/0, ip: 30.30.30.1}
 
     - name: Configuring EIGRP on R3
       ios_config:
@@ -69,7 +87,7 @@
         parents: router eigrp 10
         lines:
           - network 20.20.20.0
-          - network 10.10.10.0
+          - network 30.30.30.0
           - no auto-summary
 
       register: output
@@ -86,9 +104,9 @@
     - name: Assigning IP Address on R4
       ios_config:
         #save_when: modified
-        parents: interface e0/1
+        parents: interface fa1/0
         lines:
-          - ip add 20.20.20.2 255.255.255.252
+          - ip add 30.30.30.2 255.255.255.252
         after:
           - no shutdown
 
@@ -97,7 +115,7 @@
         #save_when: modified
         parents: router eigrp 10
         lines:
-          - network 20.20.20.0
+          - network 30.30.30.0
           - no auto-summary
 
       register: output
@@ -121,7 +139,7 @@
           - no shutdown
 
       loop:
-        - { interface: e0/1, ip: 30.30.30.1 255.255.255.252}
+        - { interface: fa1/0, ip: 40.40.40.1 255.255.255.252}
         - { interface: loopback0, ip: 5.5.5.5 255.255.255.255}
 
     - name: Configuring eBGP for on R5 with AS 200
@@ -130,7 +148,7 @@
           bgp_as: 200
           log_neighbor_changes: True
           neighbors:
-            - neighbor: 30.30.30.2
+            - neighbor: 40.40.40.2
               remote_as: 100
               timers:
                 keepalive: 60
